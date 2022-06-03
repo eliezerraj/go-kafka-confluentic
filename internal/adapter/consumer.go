@@ -16,7 +16,7 @@ const consumer_timeout = 10
 var lag_consumer = 0
 
 type ConsumerService struct{
-	configurations	*core.Configurations
+	configurations		*core.Configurations
 	consumer 			*kafka.Consumer
 }
 
