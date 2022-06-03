@@ -1,0 +1,12 @@
+kafkaConfig:
+  username: admin
+  password: admin
+  clientid: GO-CLIENT-MESSAGE
+  brokers1: localhost:9092
+  brokers2: localhost:9092
+  brokers3: localhost:9092
+  groupid: GROUP-01
+  topic: NOVO_PEDIDO_99
+  partition: 4
+  replicationfactor: 2
+  lag: 10
