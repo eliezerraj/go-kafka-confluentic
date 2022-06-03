@@ -3,10 +3,14 @@ package main
 import (
 	"log"
 	"os"
+	"context"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/viper"
 
 	"github.com/go-kafka-confluentic/internal/core"
+	"github.com/go-kafka-confluentic/internal/adapter"
 
 )
 
@@ -39,5 +43,22 @@ func main(){
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	log.Println("-> ctx", ctx)
+
+	consumerService := adapter.NewConsumerService(config)
+
+	go consumerService.Consumer(ctx)
 	
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	<-ch
+	
+	log.Println("Encerrando...")
+	defer func() {
+		if err := consumerService.Close(ctx); err != nil {
+			log.Printf("Failed to close connection: %s", err)
+		}
+		log.Println("Encerrado !!!")
+	}()
 }

@@ -7,6 +7,8 @@ type Configurations struct {
 type KafkaConfigurations struct {
     Username 		string 
     Password 		string 
+    Protocol        string
+    Mechanisms      string
     Clientid 		string 
     Brokers 		string 
     Brokers1 		string 
