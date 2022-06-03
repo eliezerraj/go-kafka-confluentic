@@ -5,7 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/viper"
-	"github.com/go-kafka/internal/core"
+
+	"github.com/go-kafka-confluentic/internal/core"
 
 )
 
