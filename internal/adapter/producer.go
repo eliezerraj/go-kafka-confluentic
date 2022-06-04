@@ -29,14 +29,17 @@ type ProducerService struct{
 
 func NewProducerService(configurations *core.Configurations) *ProducerService {
 
-	log.Printf(configurations.KafkaConfig.Brokers1)
-	config := &kafka.ConfigMap{	"metadata.broker.list":            configurations.KafkaConfig.Brokers1,
-								"security.protocol":               configurations.KafkaConfig.Protocol, //"SASL_SSL",
-								"sasl.mechanisms":                 configurations.KafkaConfig.Mechanisms, //"SCRAM-SHA-256",
-								"sasl.username":                   configurations.KafkaConfig.Username,
-								"sasl.password":                   configurations.KafkaConfig.Password,
-								"group.id":                        configurations.KafkaConfig.Groupid,
-								"default.topic.config":            kafka.ConfigMap{"auto.offset.reset": "earliest"},
+	kafkaBrokerUrls := configurations.KafkaConfig.Brokers1 + "," + configurations.KafkaConfig.Brokers2 + "," + configurations.KafkaConfig.Brokers3
+	log.Printf(kafkaBrokerUrls)
+	config := &kafka.ConfigMap{	"bootstrap.servers":            kafkaBrokerUrls,
+								"security.protocol":            configurations.KafkaConfig.Protocol, //"SASL_SSL",
+								"sasl.mechanisms":              configurations.KafkaConfig.Mechanisms, //"SCRAM-SHA-256",
+								"sasl.username":                configurations.KafkaConfig.Username,
+								"sasl.password":                configurations.KafkaConfig.Password,
+								"group.id":                     configurations.KafkaConfig.Groupid,
+								"client.id": 					configurations.KafkaConfig.Clientid,
+								"acks": 						"all",
+								"default.topic.config":         kafka.ConfigMap{"auto.offset.reset": "earliest"},
 								//"debug":                           "generic,broker,security",
 								}
 
@@ -86,7 +89,11 @@ func (p *ProducerService) Producer(ctx context.Context, i int) {
 	producer := p.producer
 	deliveryChan := make(chan kafka.Event)
 
-	err := producer.Produce(&kafka.Message{TopicPartition: kafka.TopicPartition{Topic: &p.configurations.KafkaConfig.Topic, Partition: kafka.PartitionAny}, Value: []byte(res)}, deliveryChan)
+	err := producer.Produce(&kafka.Message{
+							TopicPartition: kafka.TopicPartition{Topic: &p.configurations.KafkaConfig.Topic, Partition: kafka.PartitionAny}, 
+							Value: 	[]byte(res), 
+							Headers:  []kafka.Header{{Key: "key", Value: []byte(key)}},
+							},deliveryChan)
 	if err != nil {
 		log.Printf("Failed to producer message: %s\n", err)
 		os.Exit(1)

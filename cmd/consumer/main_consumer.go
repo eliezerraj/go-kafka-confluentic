@@ -44,8 +44,6 @@ func main(){
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log.Println("-> ctx", ctx)
-
 	consumerService := adapter.NewConsumerService(config)
 
 	go consumerService.Consumer(ctx)

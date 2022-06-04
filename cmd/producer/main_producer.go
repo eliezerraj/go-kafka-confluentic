@@ -47,8 +47,6 @@ func main(){
 
 	producerService := adapter.NewProducerService(config)
 
-	log.Println("-> ctx", ctx)
-
 	done := make(chan string)
 	go post(ctx, *producerService ,done)
 	
@@ -68,7 +66,7 @@ func main(){
 func post(ctx context.Context, producerService adapter.ProducerService, done chan string){
 	for i := 0 ; i < 3600; i++ {
 		producerService.Producer(ctx, i)
-		time.Sleep(time.Millisecond * time.Duration(2000))
+		time.Sleep(time.Millisecond * time.Duration(10000))
 	}
 	done <- "END"
 }
