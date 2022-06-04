@@ -56,9 +56,6 @@ func main(){
 	
 	log.Println("Encerrando...")
 	defer func() {
-		if err := producerService.Close(ctx); err != nil {
-			log.Printf("Failed to close connection: %s", err)
-		}
 		log.Println("Encerrado !!!")
 	}()
 }

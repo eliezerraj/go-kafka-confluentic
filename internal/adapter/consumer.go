@@ -5,8 +5,8 @@ import (
 	"os"
 	"context"
 	"time"
-	"os/signal"
-	"syscall"
+	//"os/signal"
+	//"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
@@ -53,10 +53,12 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 }
 
 func (c *ConsumerService) Close(ctx context.Context) error{
-/*	if err := c.consumer.Close(); err != nil {
+	log.Printf("Encerrando Consumer....")
+	if err := c.consumer.Close(); err != nil {
 		log.Printf("===>>> Failed to close reader:", err)
 		return err
-	}*/
+	}
+	log.Printf("Encerrado Consumer !!!!")
 	return nil
 }
 
@@ -65,8 +67,8 @@ func (c *ConsumerService) Consumer(ctx context.Context) {
 
 	topics := []string{c.configurations.KafkaConfig.Topic}
 
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	//sigchan := make(chan os.Signal, 1)
+	//signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 	err := c.consumer.SubscribeTopics(topics, nil)
 	if err != nil {
@@ -77,9 +79,9 @@ func (c *ConsumerService) Consumer(ctx context.Context) {
 	run := true
 	for run {
 		select {
-		case sig := <-sigchan:
-			log.Printf("Caught signal %v: terminating\n", sig)
-			run = false
+		//case sig := <-sigchan:
+		//	log.Printf("Caught signal %v: terminating\n", sig)
+		//	run = false
 		default:
 			ev := c.consumer.Poll(100)
 

@@ -10,5 +10,5 @@ kafkaConfig:
   groupid: GROUP-01
   topic: NOVO_PEDIDO_77
   partition: 2
-  replicationfactor: 1
+  replicationfactor: 3
   lag: 0

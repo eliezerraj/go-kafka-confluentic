@@ -36,10 +36,8 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 								"sasl.mechanisms":              configurations.KafkaConfig.Mechanisms, //"SCRAM-SHA-256",
 								"sasl.username":                configurations.KafkaConfig.Username,
 								"sasl.password":                configurations.KafkaConfig.Password,
-								"group.id":                     configurations.KafkaConfig.Groupid,
 								"client.id": 					configurations.KafkaConfig.Clientid,
 								"acks": 						"all",
-								"default.topic.config":         kafka.ConfigMap{"auto.offset.reset": "earliest"},
 								//"debug":                           "generic,broker,security",
 								}
 
@@ -53,14 +51,6 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 	return &ProducerService{ configurations : configurations,
 							producer : p,
 	}
-}
-
-func (p *ProducerService) Close(ctx context.Context) error{
-	/*if err := p.producer.Close(); err != nil {
-		log.Printf("failed to close producer:", err)
-		return err
-	}*/
-	return nil
 }
 
 func (p *ProducerService) Producer(ctx context.Context, i int) {
