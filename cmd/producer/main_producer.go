@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"context"
 	"os/signal"
 	"syscall"
 	"time"
@@ -16,6 +15,7 @@ import (
 )
 
 func LoadConfig() (*core.Configurations, error) {
+	log.Println("-> Loading config.yaml")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./")
@@ -33,37 +33,33 @@ func main(){
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("Starting kafka")
 
-	log.Println("-> Loading config.yaml")
 	config, err := LoadConfig()
 	if err != nil{
 		log.Println("* FATAL ERROR load config.yaml *", err)
 		os.Exit(3)
 	}
-
 	log.Println("-> Config", config)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	producerService := adapter.NewProducerService(config)
 
 	done := make(chan string)
-	go post(ctx, *producerService ,done)
-	
+	go post(*producerService, done)
+
+	// Shut down main function
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	<-ch
 	
-	log.Println("Encerrando...")
+	log.Println("Encerrando MAIN...")
 	defer func() {
-		log.Println("Encerrado !!!")
+		log.Println("Encerrado MAIN !!!")
 	}()
 }
 
-func post(ctx context.Context, producerService adapter.ProducerService, done chan string){
+func post(producerService adapter.ProducerService, done chan string){
 	for i := 0 ; i < 3600; i++ {
-		producerService.Producer(ctx, i)
-		time.Sleep(time.Millisecond * time.Duration(10000))
+		producerService.Producer( i)
+		time.Sleep(time.Millisecond * time.Duration(3000))
 	}
 	done <- "END"
 }

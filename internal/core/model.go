@@ -20,4 +20,5 @@ type KafkaConfigurations struct {
     ReplicationFactor int
     RequiredAcks    int
     Lag             int
+    LagCommit       int
 }

@@ -3,10 +3,12 @@ package adapter
 import (
 	"log"
 	"os"
-	"context"
 	"time"
-	//"os/signal"
-	//"syscall"
+	"os/signal"
+	"syscall"
+	"sync"
+	"strconv"
+	"math/rand"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
@@ -14,7 +16,7 @@ import (
 
 )
 
-const consumer_timeout = 10
+var lag_commit = 0
 var lag_consumer = 0
 
 type ConsumerService struct{
@@ -24,8 +26,16 @@ type ConsumerService struct{
 
 func NewConsumerService(configurations *core.Configurations) *ConsumerService {	
 	lag_consumer = configurations.KafkaConfig.Lag
+	lag_commit = configurations.KafkaConfig.LagCommit
+
 	kafkaBrokerUrls := configurations.KafkaConfig.Brokers1 + "," + configurations.KafkaConfig.Brokers2 + "," + configurations.KafkaConfig.Brokers3
 	
+
+	rand.Seed(time.Now().UnixNano())
+	min := 1
+	max := 4
+	client_id := configurations.KafkaConfig.Clientid +"-" + strconv.Itoa(rand.Intn(max-min+1) + min)
+
 	log.Printf(kafkaBrokerUrls)
 
 	config := &kafka.ConfigMap{	"bootstrap.servers":            kafkaBrokerUrls,
@@ -35,7 +45,7 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 								"sasl.password":                configurations.KafkaConfig.Password,
 								"group.id":                     configurations.KafkaConfig.Groupid,
 								"broker.address.family": 		"v4",
-								"client.id": 					configurations.KafkaConfig.Clientid,
+								"client.id": 					client_id,
 								"session.timeout.ms":    		6000,
 								"auto.offset.reset":     		"earliest"}
 
@@ -52,23 +62,13 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 	}
 }
 
-func (c *ConsumerService) Close(ctx context.Context) error{
-	log.Printf("Encerrando Consumer....")
-	if err := c.consumer.Close(); err != nil {
-		log.Printf("===>>> Failed to close reader:", err)
-		return err
-	}
-	log.Printf("Encerrado Consumer !!!!")
-	return nil
-}
-
-func (c *ConsumerService) Consumer(ctx context.Context) {
+func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 	log.Printf("kafka Consumer")
 
 	topics := []string{c.configurations.KafkaConfig.Topic}
 
-	//sigchan := make(chan os.Signal, 1)
-	//signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 
 	err := c.consumer.SubscribeTopics(topics, nil)
 	if err != nil {
@@ -79,9 +79,9 @@ func (c *ConsumerService) Consumer(ctx context.Context) {
 	run := true
 	for run {
 		select {
-		//case sig := <-sigchan:
-		//	log.Printf("Caught signal %v: terminating\n", sig)
-		//	run = false
+		case sig := <-sigchan:
+			log.Printf("Caught signal %v: terminating\n", sig)
+			run = false
 		default:
 			ev := c.consumer.Poll(100)
 
@@ -99,12 +99,20 @@ func (c *ConsumerService) Consumer(ctx context.Context) {
 				case *kafka.Message:
 					log.Printf("Topic %s:\n",e.TopicPartition)
 					log.Print("----------------------------------")
-					log.Print("Value : " ,string(e.Value))
-					log.Print("-----------------------------------")
 					if e.Headers != nil {
 						log.Printf("Headers: %v\n", e.Headers)
 					}
+					log.Print("Value : " ,string(e.Value))
+					log.Print("-----------------------------------")
+
+					if ( lag_commit > 0){
+						log.Print(" >>>> LAG COMMIT <<<")
+						log.Printf("Waiting for %v seconds", lag_commit)
+						time.Sleep(time.Millisecond * time.Duration(10000))
+					}
+					
 					c.consumer.Commit()
+
 				case kafka.Error:
 					log.Printf("%% Error: %v\n", e)
 					if e.Code() == kafka.ErrAllBrokersDown {
@@ -115,12 +123,13 @@ func (c *ConsumerService) Consumer(ctx context.Context) {
 			}
 		}
 		if ( lag_consumer > 0){
+			log.Print(" >>>> LAG MESSAGE <<<")
 			log.Printf("Waiting for %v seconds", lag_consumer)
 			time.Sleep(time.Second * time.Duration(lag_consumer))
 		}
 	}
 
-	log.Printf("Closing consumer\n")
+	log.Printf("Closing consumer waiting please !!!! \n")
 	c.consumer.Close()
-
+	defer wg.Done()
 }

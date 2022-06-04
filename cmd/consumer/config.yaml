@@ -9,6 +9,7 @@ kafkaConfig:
   brokers3: localhost:9093
   groupid: GROUP-01
   topic: NOVO_PEDIDO_77
-  partition: 2
+  partition: 4
   replicationfactor: 3
   lag: 0
+  lagcommit: 10

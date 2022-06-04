@@ -3,7 +3,6 @@ package adapter
 import (
 	"log"
 	"os"
-	"context"
 	"time"
 	"encoding/json"
 	"strconv"
@@ -53,27 +52,30 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 	}
 }
 
-func (p *ProducerService) Producer(ctx context.Context, i int) {
+func (p *ProducerService) Producer(i int) {
 	log.Printf("kafka Producer")
 
 	rand.Seed(time.Now().UnixNano())
 	min := 1
 	max := 4
-	key := "key-"+ strconv.Itoa(rand.Intn(max-min+1) + min)
+	salt := rand.Intn(max-min+1) + min
+	key := "key-"+ strconv.Itoa(salt)
 	//message := "teste-(" + strconv.Itoa(rand.Intn(max-min+1) + min)  + ")-" + strconv.Itoa(i)
 
 	message := Message{}
-	message.ID = rand.Intn(max-min+1) + min
-	message.Description = "teste-(" + strconv.Itoa(rand.Intn(max-min+1) + min)  + ")-" + strconv.Itoa(i)
+	message.ID = i + 1
+	message.Description = "teste-(" + strconv.Itoa(salt)  + ")" 
 	message.Status = true
 	res, _ := json.Marshal(message)
-	msg := kafka.Message{
+	/*msg := kafka.Message{
 			Key:    []byte(key),
 			Value:  []byte(string(res)),
-	}
+	}*/
 
 	log.Println("----------------------------------------")
-	log.Printf("==> Message Topic %s Key %s Value %s \n", p.configurations.KafkaConfig.Topic ,string(msg.Key), string(msg.Value))
+	log.Printf("==> Topic   : %s \n", p.configurations.KafkaConfig.Topic)
+	log.Printf("==> Headers : %s \n", string([]byte(key)))
+	log.Printf("==> Message : %s \n", string([]byte(res)))
 	log.Println("----------------------------------------")
 
 	producer := p.producer

@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 	"os"
-	"context"
-	"os/signal"
-	"syscall"
+	"sync"
+	//"os/signal"
+	//"syscall"
 
 	"github.com/spf13/viper"
 
@@ -15,6 +15,7 @@ import (
 )
 
 func LoadConfig() (*core.Configurations, error) {
+	log.Println("-> Loading config.yaml")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("./")
@@ -32,31 +33,18 @@ func main(){
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("Starting kafka")
 
-	log.Println("-> Loading config.yaml")
 	config, err := LoadConfig()
 	if err != nil{
 		log.Println("* FATAL ERROR load config.yaml *", err)
 		os.Exit(3)
 	}
-
 	log.Println("-> Config", config)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
 	consumerService := adapter.NewConsumerService(config)
+	
+    var wg sync.WaitGroup
+	wg.Add(1)
+	go consumerService.Consumer(&wg)
+	wg.Wait()
 
-	go consumerService.Consumer(ctx)
-	
-	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
-	<-ch
-	
-	log.Println("Encerrando...")
-	defer func() {
-		if err := consumerService.Close(ctx); err != nil {
-			log.Printf("Failed to close connection: %s", err)
-		}
-		log.Println("Encerrado !!!")
-	}()
 }
