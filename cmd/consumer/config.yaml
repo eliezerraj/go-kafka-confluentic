@@ -11,4 +11,4 @@ kafkaConfig:
   topic: NOVO_PEDIDO_77
   partition: 2
   replicationfactor: 1
-  lag: 20
+  lag: 0
