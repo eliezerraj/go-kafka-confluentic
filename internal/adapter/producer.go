@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"math/rand"
+	"hash/fnv"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 
@@ -17,6 +18,7 @@ const producer_timeout = 10
 
 type Message struct {
     ID          int     `json:"id"`
+	Key			string  `json:"key"`
     Description string  `json:"description"`
     Status      bool    `json:"status"`
 }
@@ -35,8 +37,7 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 								"sasl.mechanisms":              configurations.KafkaConfig.Mechanisms, //"SCRAM-SHA-256",
 								"sasl.username":                configurations.KafkaConfig.Username,
 								"sasl.password":                configurations.KafkaConfig.Password,
-								"client.id": 					configurations.KafkaConfig.Clientid,
-								"acks": 						"all",
+								//"acks": 						"all",
 								//"debug":                           "generic,broker,security",
 								}
 
@@ -52,6 +53,21 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 	}
 }
 
+//Hash key
+func getPartition(key int, part *int) int32 {
+	return int32(key%*part)
+}
+
+func hash(s string) int {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return int(h.Sum32())
+}
+
+func getPartitionHash(key string, part *int) int32 {
+	return int32(hash(key)%*part)
+}
+
 func (p *ProducerService) Producer(i int) {
 	log.Printf("kafka Producer")
 
@@ -60,9 +76,9 @@ func (p *ProducerService) Producer(i int) {
 	max := 4
 	salt := rand.Intn(max-min+1) + min
 	key := "key-"+ strconv.Itoa(salt)
-	//message := "teste-(" + strconv.Itoa(rand.Intn(max-min+1) + min)  + ")-" + strconv.Itoa(i)
 
 	message := Message{}
+	message.Key = key
 	message.ID = i + 1
 	message.Description = "teste-(" + strconv.Itoa(salt)  + ")" 
 	message.Status = true
@@ -73,16 +89,20 @@ func (p *ProducerService) Producer(i int) {
 	}*/
 
 	log.Println("----------------------------------------")
-	log.Printf("==> Topic   : %s \n", p.configurations.KafkaConfig.Topic)
-	log.Printf("==> Headers : %s \n", string([]byte(key)))
-	log.Printf("==> Message : %s \n", string([]byte(res)))
+	log.Printf("==> Topic     : %s \n", p.configurations.KafkaConfig.Topic)
+	log.Printf("==> PartHash  : %v \n", getPartitionHash(key, &p.configurations.KafkaConfig.Partition))
+	log.Printf("==> Partition : %v \n", getPartition(salt, &p.configurations.KafkaConfig.Partition))
+	log.Printf("==> Headers   : %s \n", string([]byte(key)))
+	log.Printf("==> Message   : %s \n", string([]byte(res)))
 	log.Println("----------------------------------------")
 
 	producer := p.producer
 	deliveryChan := make(chan kafka.Event)
 
 	err := producer.Produce(&kafka.Message{
-							TopicPartition: kafka.TopicPartition{Topic: &p.configurations.KafkaConfig.Topic, Partition: kafka.PartitionAny}, 
+							TopicPartition: kafka.TopicPartition{Topic: &p.configurations.KafkaConfig.Topic, 
+																Partition: getPartition(salt, &p.configurations.KafkaConfig.Partition), //kafka.PartitionAny,
+																}, 
 							Value: 	[]byte(res), 
 							Headers:  []kafka.Header{{Key: "key", Value: []byte(key)}},
 							},deliveryChan)
@@ -92,6 +112,7 @@ func (p *ProducerService) Producer(i int) {
 	}
 	e := <-deliveryChan
 	m := e.(*kafka.Message)
+
 	if m.TopicPartition.Error != nil {
 		log.Printf("Delivery failed: %v\n", m.TopicPartition.Error)
 	} else {

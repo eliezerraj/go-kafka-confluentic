@@ -44,6 +44,7 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 								"sasl.username":                configurations.KafkaConfig.Username,
 								"sasl.password":                configurations.KafkaConfig.Password,
 								"group.id":                     configurations.KafkaConfig.Groupid,
+								"enable.auto.commit":           true,
 								"broker.address.family": 		"v4",
 								"client.id": 					client_id,
 								"session.timeout.ms":    		6000,
@@ -77,6 +78,12 @@ func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 	}
 
 	run := true
+	banner := 0
+	count_rollback := 5
+	count := 10
+	is_abort := false
+//	lag_commit = 1
+
 	for run {
 		select {
 		case sig := <-sigchan:
@@ -97,6 +104,13 @@ func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 				case kafka.PartitionEOF:
 					log.Printf("%% Reached %v\n", e)
 				case *kafka.Message:
+					if banner == 0 {
+						log.Print("* * * *")
+						banner = 1
+					} else {
+						log.Print("- - - -")
+						banner = 0
+					}
 					log.Printf("Topic %s:\n",e.TopicPartition)
 					log.Print("----------------------------------")
 					if e.Headers != nil {
@@ -108,10 +122,21 @@ func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 					if ( lag_commit > 0){
 						log.Print(" >>>> LAG COMMIT <<<")
 						log.Printf("Waiting for %v seconds", lag_commit)
-						time.Sleep(time.Millisecond * time.Duration(10000))
+						time.Sleep(time.Millisecond * time.Duration(lag_commit))
 					}
 					
-					c.consumer.Commit()
+					if is_abort == true{
+						count++
+						if count%count_rollback == 0{
+							log.Print("===> ABORTING !!!!!")
+							os.Exit(3)
+						} else {
+							log.Print("===> COMMIT !!!!!")
+							//c.consumer.Commit()
+						}
+					} else {
+						//c.consumer.Commit()
+					}
 
 				case kafka.Error:
 					log.Printf("%% Error: %v\n", e)
