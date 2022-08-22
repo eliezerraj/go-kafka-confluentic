@@ -49,7 +49,8 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 								"client.id": 					client_id,
 								"session.timeout.ms":    		6000,
 								"enable.idempotence":			true,
-								"auto.offset.reset":     		"earliest"}
+								"auto.offset.reset":     		"latest", //"earliest",
+							}
 
 	c, err := kafka.NewConsumer(config)
 	if err != nil {

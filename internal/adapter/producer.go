@@ -39,6 +39,8 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 								"sasl.password":                configurations.KafkaConfig.Password,
 								"acks": 						"all", // acks=0  acks=1 acks=all
 								"message.timeout.ms":			5000,
+								"retries":						5,
+								"retry.backoff.ms":				500,
 								//"debug":                           "generic,broker,security",
 								}
 
