@@ -44,10 +44,11 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 								"sasl.username":                configurations.KafkaConfig.Username,
 								"sasl.password":                configurations.KafkaConfig.Password,
 								"group.id":                     configurations.KafkaConfig.Groupid,
-								"enable.auto.commit":           true,
+								"enable.auto.commit":           false, //true,
 								"broker.address.family": 		"v4",
 								"client.id": 					client_id,
 								"session.timeout.ms":    		6000,
+								"enable.idempotence":			true,
 								"auto.offset.reset":     		"earliest"}
 
 	c, err := kafka.NewConsumer(config)
@@ -132,10 +133,10 @@ func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 							os.Exit(3)
 						} else {
 							log.Print("===> COMMIT !!!!!")
-							//c.consumer.Commit()
+							c.consumer.Commit()
 						}
 					} else {
-						//c.consumer.Commit()
+						c.consumer.Commit()
 					}
 
 				case kafka.Error:
@@ -144,7 +145,7 @@ func (c *ConsumerService) Consumer(wg *sync.WaitGroup) {
 						run = false
 					}
 				default:
-					log.Print("Ignored %v\n", e)
+					log.Printf("Ignored %v\n", e)
 			}
 		}
 		if ( lag_consumer > 0){

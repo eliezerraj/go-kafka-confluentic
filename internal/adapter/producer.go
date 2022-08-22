@@ -37,7 +37,8 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 								"sasl.mechanisms":              configurations.KafkaConfig.Mechanisms, //"SCRAM-SHA-256",
 								"sasl.username":                configurations.KafkaConfig.Username,
 								"sasl.password":                configurations.KafkaConfig.Password,
-								//"acks": 						"all",
+								"acks": 						"all", // acks=0  acks=1 acks=all
+								"message.timeout.ms":			5000,
 								//"debug":                           "generic,broker,security",
 								}
 
