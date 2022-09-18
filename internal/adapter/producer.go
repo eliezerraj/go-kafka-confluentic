@@ -41,6 +41,7 @@ func NewProducerService(configurations *core.Configurations) *ProducerService {
 								"message.timeout.ms":			5000,
 								"retries":						5,
 								"retry.backoff.ms":				500,
+								"enable.idempotence":			true,
 								//"debug":                           "generic,broker,security",
 								}
 
