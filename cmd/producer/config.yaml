@@ -4,9 +4,9 @@ kafkaConfig:
   protocol: SASL_SSL
   mechanisms: SCRAM-SHA-512
   clientid: GO-CLIENT-MESSAGE
-  brokers1: b-1.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
-  brokers2: b-2.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
-  brokers3: b-2.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
-  topic: TOPIC_TEST_ARCH
+  brokers1: b-1.mskarchtest02.9vkh4b.c3.kafka.us-east-2.amazonaws.com:9096
+  brokers2: b-1.mskarchtest02.9vkh4b.c3.kafka.us-east-2.amazonaws.com:9096
+  brokers3: b-1.mskarchtest02.9vkh4b.c3.kafka.us-east-2.amazonaws.com:9096
+  topic: TOPIC_ARCHITECTURE
   partition: 2
   replicationfactor: 2

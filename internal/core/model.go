@@ -10,7 +10,6 @@ type KafkaConfigurations struct {
     Protocol        string
     Mechanisms      string
     Clientid 		string 
-    Brokers 		string 
     Brokers1 		string 
     Brokers2 		string 
     Brokers3 		string 

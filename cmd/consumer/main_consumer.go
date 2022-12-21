@@ -99,6 +99,10 @@ func main(){
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	log.Printf("Starting kafka")
 
+	log.Println("+++++++++++++++++++++++++++++++++")
+	log.Println("Variables FINAL : ", &app_kafka_config)
+	log.Println("+++++++++++++++++++++++++++++++++")
+	
 	consumerService := adapter.NewConsumerService(&app_kafka_config)
 	
     var wg sync.WaitGroup

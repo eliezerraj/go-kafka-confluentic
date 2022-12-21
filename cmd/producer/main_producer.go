@@ -88,6 +88,10 @@ func main(){
 	
 	producerService := adapter.NewProducerService(&app_kafka_config)
 
+	log.Println("+++++++++++++++++++++++++++++++++")
+	log.Println("Variables FINAL : ", &app_kafka_config)
+	log.Println("+++++++++++++++++++++++++++++++++")
+
 	done := make(chan string)
 	go post(*producerService, done)
 

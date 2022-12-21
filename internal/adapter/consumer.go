@@ -30,13 +30,16 @@ func NewConsumerService(configurations *core.Configurations) *ConsumerService {
 
 	kafkaBrokerUrls := configurations.KafkaConfig.Brokers1 + "," + configurations.KafkaConfig.Brokers2 + "," + configurations.KafkaConfig.Brokers3
 	
-
 	rand.Seed(time.Now().UnixNano())
 	min := 1
 	max := 4
 	client_id := configurations.KafkaConfig.Clientid +"-" + strconv.Itoa(rand.Intn(max-min+1) + min)
 
 	log.Printf(kafkaBrokerUrls)
+	log.Printf("protocol :", configurations.KafkaConfig.Protocol)
+	log.Printf("mechanisms :", configurations.KafkaConfig.Mechanisms)
+	log.Printf("username :", configurations.KafkaConfig.Username)
+	log.Printf("Password :", configurations.KafkaConfig.Password)
 
 	config := &kafka.ConfigMap{	"bootstrap.servers":            kafkaBrokerUrls,
 								"security.protocol":            configurations.KafkaConfig.Protocol, //"SASL_SSL",
