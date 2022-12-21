@@ -1,12 +1,12 @@
 kafkaConfig:
   username: admin
   password: admin
-  protocol: SASL_PLAINTEXT
-  mechanisms: PLAIN
+  protocol: SASL_SSL
+  mechanisms: SCRAM-SHA-512
   clientid: GO-CLIENT-MESSAGE
-  brokers1: localhost:9091
-  brokers2: localhost:9092
-  brokers3: localhost:9093
-  topic: NOVO_PEDIDO_77
+  brokers1: b-1.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
+  brokers2: b-2.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
+  brokers3: b-2.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096
+  topic: TOPIC_TEST_ARCH
   partition: 2
-  replicationfactor: 3
+  replicationfactor: 2

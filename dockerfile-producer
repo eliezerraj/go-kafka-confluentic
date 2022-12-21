@@ -1,0 +1,18 @@
+# docker network create --driver bridge go_hexa_net
+# docker build -t go_kafka_producer . -f dockerfile-producer
+# docker run -dit --network go_hexa_net --name go_kafka_producer -p 9091:9091 -p 9092:9092 -p 9093:9093 go_kafka_producer
+
+FROM golang:1.18 As builder
+
+WORKDIR /app
+COPY . .
+
+WORKDIR /app/cmd/producer
+#RUN CGO_ENABLED=0 GOOS=linux go build -ldflags '-w' -o go_kafka_producer
+RUN go build -o go_kafka_producer -ldflags '-linkmode external -w -extldflags "-static"'
+
+FROM alpine
+WORKDIR /app
+COPY --from=builder /app/cmd/producer/go_kafka_producer .
+COPY --from=builder /app/cmd/producer/config.yaml .
+CMD ["/app/go_kafka_producer"]

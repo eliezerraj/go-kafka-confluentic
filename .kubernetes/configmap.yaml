@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "go-kafka-confluentic"
+  namespace: test-a
+  labels:
+    app: "go-kafka-confluentic"
+    version: "1.0"
+data:
+  KAFKA_USER: "admin"
+  KAFKA_PASSWORD: "admin"
+  KAFKA_PROTOCOL: "SASL_SSL"
+  KAFKA_MECHANISM: "SCRAM-SHA-512"
+  KAFKA_CLIENT_ID: "GO-CLIENT-MESSAGE"
+  KAFKA_BROKER_1: "b-1.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096"
+  KAFKA_BROKER_2: "b-1.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096"
+  KAFKA_BROKER_3: "b-2.mskarchtest.atu24m.c3.kafka.us-east-2.amazonaws.com:9096"
+  KAFKA_GROUP_ID: "GROUP-01"
+  KAFKA_TOPIC: "TOPIC_ARCHITECTURE"
+  KAFKA_PARTITION: "2"
+  KAFKA_REPLICATION: "2"
+  APP_LAG: "0"
+  APP_LAG_COMMIT: "0"

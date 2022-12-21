@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-kafka-consumer
+  namespace: test-a
+  labels:
+    version: "1.0"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: go-kafka-consumer
+  template:
+    metadata:
+      labels:
+        app: go-kafka-consumer
+        version: "1.0"
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 2000
+        fsGroup: 3000
+      containers:
+      - name: go-kafka-consumer
+        image: 908671954593.dkr.ecr.us-east-2.amazonaws.com/go_kafka_consumer:latest
+        resources:
+           requests:
+             cpu: 50m
+             memory: 64Mi
+           limits:
+             cpu: 50m
+             memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 9096
+        envFrom:
+          - configMapRef:
+              name: go-kafka-confluentic
+      terminationGracePeriodSeconds: 60
