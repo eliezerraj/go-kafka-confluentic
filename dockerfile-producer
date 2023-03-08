@@ -2,7 +2,7 @@
 # docker build -t go_kafka_producer . -f dockerfile-producer
 # docker run -dit --network go_hexa_net --name go_kafka_producer -p 9091:9091 -p 9092:9092 -p 9093:9093 go_kafka_producer
 
-FROM golang:1.18 As builder
+FROM golang:1.19 As builder
 
 WORKDIR /app
 COPY . .
